@@ -52,6 +52,31 @@ class Model:
 
         return cv
 
+    def draw_last_fold_prediction(self, bd_no, params, best_num_boost_round):
+        train_data = self.train.loc[self.train['bd_no'] == bd_no, self.feature_names][0:1872]
+        test_data = self.train.loc[self.train['bd_no'] == bd_no, self.feature_names][1872:]
+        train_label = self.train.loc[self.train['bd_no'] == bd_no, 'target'][0:1872]
+        test_label = self.train.loc[self.train['bd_no'] == bd_no, 'target'][1872:]
+        dtrain = xgb.DMatrix(data=train_data, label=train_label)
+        dtest = xgb.DMatrix(data=test_data)
+
+        model = xgb.train(params=params,
+                          dtrain=dtrain,
+                          num_boost_round=best_num_boost_round,
+                          obj=sudo_smape,
+                          custom_metric=smape)
+
+        y_pred = model.predict(dtest)
+
+        train_dt = pd.date_range('2022-06-01 00:00:00', '2022-08-17 23:00:00', freq='H')
+        test_dt = pd.date_range('2022-08-18 00:00:00', '2022-08-24 23:00:00', freq='H')
+
+        fig, ax = plt.subplots(figsize=(20, 4))
+        ax.plot(train_dt, train_label)
+        ax.plot(test_dt, test_label, legend='true')
+        ax.plot(test_dt, y_pred, legend='pred')
+        plt.show()
+
     def draw_train_test_smape(self, train_smape, test_smape):
         fig, ax = plt.subplots()
         ax.plot(train_smape, label='train')
