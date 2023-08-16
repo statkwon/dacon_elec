@@ -49,16 +49,44 @@ class Data:
         self.train['h'] = self.train['dt'].dt.hour
         self.test['h'] = self.test['dt'].dt.hour
 
+        # 주 변수 생성
+        self.train['w'] = [
+            dt.isocalendar().week - 21 if dt.month == 6
+            else dt.isocalendar().week - 25 if dt.month == 7
+            else dt.isocalendar().week - 30
+            for dt in self.train['dt']
+        ]
+        self.test['w'] = [
+            dt.isocalendar().week - 21 if dt.month == 6
+            else dt.isocalendar().week - 25 if dt.month == 7
+            else dt.isocalendar().week - 30
+            for dt in self.test['dt']
+        ]
+
         # 불쾌지수 변수 추가
         self.train['di'] = (9 / 5) * self.train['temp'] - 0.55 * (1 - self.train['hmd'] / 100) * ((9 / 5) * self.train['temp'] - 26) + 32
         self.test['di'] = (9 / 5) * self.test['temp'] - 0.55 * (1 - self.test['hmd'] / 100) * ((9 / 5) * self.test['temp'] - 26) + 32
 
-        # 건물 & 월 & 요일 & 시간별 전력소비량 평균
-        gbmwdh_target = self.train.groupby(by=['bd_no', 'm', 'wd', 'h'], as_index=False).agg({'target': 'mean'})
-        gbmwdh_target.rename({'target': 'gbmwdht'}, axis=1, inplace=True)
+        # 건물 / 월 / 주 / 요일 / 시간별 전력소비량 평균
+        gb_m_target = self.train.groupby(by=['bd_no', 'm'], as_index=False).agg({'target':'mean'})
+        gb_m_target.rename({'target': 'gbmt'}, axis=1, inplace=True)
+        self.train = pd.merge(self.train, gb_m_target, how='left')
+        self.test = pd.merge(self.test, gb_m_target, how='left')
 
-        self.train = pd.merge(self.train, gbmwdh_target, how='left')
-        self.test = pd.merge(self.test, gbmwdh_target, how='left')
+        gb_w_target = self.train.groupby(by=['bd_no', 'w'], as_index=False).agg({'target': 'mean'})
+        gb_w_target.rename({'target': 'gbwt'}, axis=1, inplace=True)
+        self.train = pd.merge(self.train, gb_w_target, how='left')
+        self.test = pd.merge(self.test, gb_w_target, how='left')
+
+        gb_wd_target = self.train.groupby(by=['bd_no', 'wd'], as_index=False).agg({'target': 'mean'})
+        gb_wd_target.rename({'target': 'gbwdt'}, axis=1, inplace=True)
+        self.train = pd.merge(self.train, gb_wd_target, how='left')
+        self.test = pd.merge(self.test, gb_wd_target, how='left')
+
+        gb_h_target = self.train.groupby(by=['bd_no', 'h'], as_index=False).agg({'target': 'mean'})
+        gb_h_target.rename({'target': 'gbht'}, axis=1, inplace=True)
+        self.train = pd.merge(self.train, gb_h_target, how='left')
+        self.test = pd.merge(self.test, gb_h_target, how='left')
 
         # 공휴일 변수 추가
         kr_holidays = holidays.KR(years=2022)
