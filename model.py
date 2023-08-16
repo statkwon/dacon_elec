@@ -73,8 +73,9 @@ class Model:
 
         fig, ax = plt.subplots(figsize=(20, 4))
         ax.plot(train_dt, train_label)
-        ax.plot(test_dt, test_label, legend='true')
-        ax.plot(test_dt, y_pred, legend='pred')
+        ax.plot(test_dt, test_label, label='true')
+        ax.plot(test_dt, y_pred, label='pred')
+        ax.legend()
         plt.show()
 
     def draw_train_test_smape(self, train_smape, test_smape):
@@ -138,6 +139,7 @@ class Model:
             fig, ax = plt.subplots(figsize=(20, 4))
             ax.plot('dt', 'target', data=self.train[self.train['bd_no'] == bd_no])
             ax.plot(self.test.loc[self.test['bd_no'] == bd_no, 'dt'], self.answer[(168 * bd_no - 168):(168 * bd_no)])
+            ax.set_title('Building %d' % bd_no)
             plt.show()
         else:
             raise Exception('predict() should be runned first!')
