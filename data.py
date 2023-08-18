@@ -87,22 +87,22 @@ class Data:
         self.test['sun'] = [dt.day_of_week == 6 for dt in self.test['dt']]
 
         # 건물 / 월 / 주 / 요일 / 시간별 전력소비량 평균
-        gb_m_target = self.train.groupby(by=['bd_no', 'm'], as_index=False).agg({'target': 'mean'})
+        gb_m_target = self.train.groupby(by=['bd_no', 'm', 'h'], as_index=False).agg({'target': 'mean'})
         gb_m_target.rename({'target': 'gbmt'}, axis=1, inplace=True)
         self.train = pd.merge(self.train, gb_m_target, how='left')
         self.test = pd.merge(self.test, gb_m_target, how='left')
 
-        gb_w_target = self.train.groupby(by=['bd_no', 'w'], as_index=False).agg({'target': 'mean'})
+        gb_w_target = self.train.groupby(by=['bd_no', 'w', 'h'], as_index=False).agg({'target': 'mean'})
         gb_w_target.rename({'target': 'gbwt'}, axis=1, inplace=True)
         self.train = pd.merge(self.train, gb_w_target, how='left')
         self.test = pd.merge(self.test, gb_w_target, how='left')
 
-        gb_wd_target = self.train.groupby(by=['bd_no', 'wd'], as_index=False).agg({'target': 'mean'})
+        gb_wd_target = self.train.groupby(by=['bd_no', 'wd', 'h'], as_index=False).agg({'target': 'mean'})
         gb_wd_target.rename({'target': 'gbwdt'}, axis=1, inplace=True)
         self.train = pd.merge(self.train, gb_wd_target, how='left')
         self.test = pd.merge(self.test, gb_wd_target, how='left')
 
-        gb_hd_target = self.train.groupby(by=['bd_no', 'hd'], as_index=False).agg({'target': 'mean'})
+        gb_hd_target = self.train.groupby(by=['bd_no', 'hd', 'h'], as_index=False).agg({'target': 'mean'})
         gb_hd_target.rename({'target': 'gbhdt'}, axis=1, inplace=True)
         self.train = pd.merge(self.train, gb_hd_target, how='left')
         self.test = pd.merge(self.test, gb_hd_target, how='left')
@@ -112,12 +112,12 @@ class Data:
         self.train = pd.merge(self.train, gb_h_target, how='left')
         self.test = pd.merge(self.test, gb_h_target, how='left')
 
-        gb_mon_target = self.train.groupby(by=['bd_no', 'mon'], as_index=False).agg({'target': 'mean'})
+        gb_mon_target = self.train.groupby(by=['bd_no', 'mon', 'h'], as_index=False).agg({'target': 'mean'})
         gb_mon_target.rename({'target': 'gbmont'}, axis=1, inplace=True)
         self.train = pd.merge(self.train, gb_mon_target, how='left')
         self.test = pd.merge(self.test, gb_mon_target, how='left')
 
-        gb_sun_target = self.train.groupby(by=['bd_no', 'sun'], as_index=False).agg({'target': 'mean'})
+        gb_sun_target = self.train.groupby(by=['bd_no', 'sun', 'h'], as_index=False).agg({'target': 'mean'})
         gb_sun_target.rename({'target': 'gbsunt'}, axis=1, inplace=True)
         self.train = pd.merge(self.train, gb_sun_target, how='left')
         self.test = pd.merge(self.test, gb_sun_target, how='left')
