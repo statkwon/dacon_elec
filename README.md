@@ -8,6 +8,10 @@
 | 2023-08-16 22:07:38 | 6.874945 / 0.026166 |   7.090952714    | ['temp', 'pcpn', 'wn_spd', 'hmd', 'm', 'h', 'di', 'gbmt', 'gbwt', 'gbwdt', 'gbht', 'hd']                    |
 | 2023-08-17 23:22:46 | 7.721417 / 0.026394 |   7.2037221875   | ['temp', 'pcpn', 'wn_spd', 'hmd', 'di', 'gbmt', 'gbwt', 'gbwdt', 'gbht', 'gbhdt', 'gbmont', 'gbsunt', 'hd'] |
 | 2023-08-19 01:09:45 | 6.523173 / 0.026867 | **6.8626078093** | ['temp', 'pcpn', 'wn_spd', 'hmd', 'di', 'gbmht', 'gbwht', 'gbwdht', 'gbht', 'gbhdht', 'gbmonht', 'gbsunht'] |
+| 2023-08-19 23:31:59 | 8.565082 / 0.033996 |   7.3973001845   | ['temp', 'pcpn', 'wn_spd', 'hmd', 'di', 'gbmht', 'gbwht', 'gbwdht', 'gbht', 'gbhdht', 'gbmonht', 'gbsunht'] |
+
+## Memo
+- 6th submission 이전까지는 학습 과정에 있어 테스트 데이터가 활용되었기 때문에 CV SMAPE의 신뢰도가 떨어진다.
 
 ## SMAPE
 $$\text{SMAPE}=\dfrac{100}{n}\sum_{i=1}^n\dfrac{\vert \hat{y}_i-y_i \vert}{(\vert y_i \vert+\vert \hat{y}_i \vert)/2}$$
@@ -31,5 +35,6 @@ draw_sape(np.linspace(data.train['target'].min(), data.train['target'].max(), 10
 - [SMAPE](https://en.wikipedia.org/wiki/Symmetric_mean_absolute_percentage_error)
 - [Discomfort Index](https://news.samsungdisplay.com/32491)
 - [XGBoost - Custom Objective & Evaluation Metric](https://xgboost.readthedocs.io/en/stable/tutorials/custom_metric_obj.html)
+- [XGBoost - fpreproc](https://xgboost.readthedocs.io/en/stable/python/examples/cross_validation.html)
 - [sklearn - TimeSeriesSplit](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.TimeSeriesSplit.html)
 - [Pandas - Moving Average](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.rolling.html)
