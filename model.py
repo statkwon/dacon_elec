@@ -27,6 +27,57 @@ def sudo_smape(predt: np.ndarray, dtrain: xgb.DMatrix) -> Tuple[np.ndarray, np.n
     return grad, hess
 
 
+def fpreproc(dtrain, dtest, param):
+    train_data = pd.DataFrame(dtrain.get_data().toarray(), columns=dtrain.feature_names)
+    train_label = dtrain.get_label()
+    train_data['target'] = train_label
+    test_data = pd.DataFrame(dtest.get_data().toarray(), columns=dtest.feature_names)
+    test_label = dtest.get_label()
+
+    gb_m_target = train_data.groupby(by=['m', 'h'], as_index=False).agg({'target': 'mean'})
+    gb_m_target.rename({'target': 'gbmt'}, axis=1, inplace=True)
+    train_data = pd.merge(train_data, gb_m_target, how='left')
+    test_data = pd.merge(test_data, gb_m_target, how='left')
+
+    gb_w_target = train_data.groupby(by=['w', 'h'], as_index=False).agg({'target': 'mean'})
+    gb_w_target.rename({'target': 'gbwt'}, axis=1, inplace=True)
+    train_data = pd.merge(train_data, gb_w_target, how='left')
+    test_data = pd.merge(test_data, gb_w_target, how='left')
+
+    gb_wd_target = train_data.groupby(by=['wd', 'h'], as_index=False).agg({'target': 'mean'})
+    gb_wd_target.rename({'target': 'gbwdt'}, axis=1, inplace=True)
+    train_data = pd.merge(train_data, gb_wd_target, how='left')
+    test_data = pd.merge(test_data, gb_wd_target, how='left')
+
+    gb_hd_target = train_data.groupby(by=['hd', 'h'], as_index=False).agg({'target': 'mean'})
+    gb_hd_target.rename({'target': 'gbhdt'}, axis=1, inplace=True)
+    train_data = pd.merge(train_data, gb_hd_target, how='left')
+    test_data = pd.merge(test_data, gb_hd_target, how='left')
+
+    gb_h_target = train_data.groupby(by='h', as_index=False).agg({'target': 'mean'})
+    gb_h_target.rename({'target': 'gbht'}, axis=1, inplace=True)
+    train_data = pd.merge(train_data, gb_h_target, how='left')
+    test_data = pd.merge(test_data, gb_h_target, how='left')
+
+    gb_mon_target = train_data.groupby(by=['mon', 'h'], as_index=False).agg({'target': 'mean'})
+    gb_mon_target.rename({'target': 'gbmont'}, axis=1, inplace=True)
+    train_data = pd.merge(train_data, gb_mon_target, how='left')
+    test_data = pd.merge(test_data, gb_mon_target, how='left')
+
+    gb_sun_target = train_data.groupby(by=['sun', 'h'], as_index=False).agg({'target': 'mean'})
+    gb_sun_target.rename({'target': 'gbsunt'}, axis=1, inplace=True)
+    train_data = pd.merge(train_data, gb_sun_target, how='left')
+    test_data = pd.merge(test_data, gb_sun_target, how='left')
+
+    train_data.drop(['m', 'wd', 'h', 'w', 'hd', 'mon', 'sun', 'target'], axis=1, inplace=True)
+    test_data.drop(['m', 'wd', 'h', 'w', 'hd', 'mon', 'sun'], axis=1, inplace=True)
+
+    dtrain = xgb.DMatrix(data=train_data, label=train_label)
+    dtest = xgb.DMatrix(data=test_data, label=test_label)
+
+    return dtrain, dtest, param
+
+
 class Model:
     def __init__(self, train, test, feature_names, cv_results=None, answer=None):
         self.train = train
@@ -47,6 +98,7 @@ class Model:
                     obj=sudo_smape,
                     maximize=False,
                     early_stopping_rounds=early_stopping_rounds,
+                    fpreproc=fpreproc,
                     shuffle=False,
                     custom_metric=smape)
 
