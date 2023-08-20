@@ -103,6 +103,15 @@ class Data:
         # 풍속 및 습도 결측치 한 시점 이전의 값으로 대체
         self.train.fillna(method='ffill', inplace=True)
 
+        # 백화점 및 아울렛 휴일 제거
+        self.train['date'] = self.train['dt'].dt.date
+        target_max = self.train.groupby(by=['bd_no', 'date'], as_index=False).agg({'target': 'max'})
+        cutoff = [3500, 1000, 1500, 2500, 3500, 1500]
+        for i, bd_no in enumerate(range(37, 43)):
+            for date in target_max.loc[(target_max['bd_no'] == bd_no) & (target_max['target'] < cutoff[i]), 'date']:
+                idx = self.train[(self.train['bd_no'] == bd_no) & (self.train['dt'].dt.date == date)].index
+                self.train.drop(idx, inplace=True)
+
     def draw_target(self, bd_no):
         fig, ax = plt.subplots(figsize=(20, 4))
         ax.plot('dt', 'target', data=self.train[self.train['bd_no'] == bd_no])
