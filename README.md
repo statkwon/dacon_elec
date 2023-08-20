@@ -7,9 +7,9 @@
 | 3  | 2023-08-15 21:50:38 | 6.459990 / 0.027497 |   7.5985445132   | ['temp', 'pcpn', 'wn_spd', 'hmd', 'm', 'h', 'di', 'gbmwdht', 'hd']                                                                   |
 | 4  | 2023-08-16 22:07:38 | 6.874945 / 0.026166 |   7.090952714    | ['temp', 'pcpn', 'wn_spd', 'hmd', 'm', 'h', 'di', 'gbmt', 'gbwt', 'gbwdt', 'gbht', 'hd']                                             |
 | 5  | 2023-08-17 23:22:46 | 7.721417 / 0.026394 |   7.2037221875   | ['temp', 'pcpn', 'wn_spd', 'hmd', 'di', 'gbmt', 'gbwt', 'gbwdt', 'gbht', 'gbhdt', 'gbmont', 'gbsunt', 'hd']                          |
-| 6  | 2023-08-19 01:09:45 | 6.523173 / 0.026867 | **6.8626078093** | ['temp', 'pcpn', 'wn_spd', 'hmd', 'di', 'gbmht', 'gbwht', 'gbwdht', 'gbht', 'gbhdht', 'gbmonht', 'gbsunht']                          |
+| 6  | 2023-08-19 01:09:45 | 6.523173 / 0.026867 |   6.8626078093   | ['temp', 'pcpn', 'wn_spd', 'hmd', 'di', 'gbmht', 'gbwht', 'gbwdht', 'gbht', 'gbhdht', 'gbmonht', 'gbsunht']                          |
 | 7  | 2023-08-19 23:31:59 | 8.565082 / 0.033996 |   7.3973001845   | ['temp', 'pcpn', 'wn_spd', 'hmd', 'di', 'gbmht', 'gbwht', 'gbwdht', 'gbht', 'gbhdht', 'gbmonht', 'gbsunht']                          |
-| 8  | 2023-08-20 13:17:02 | 8.63984 / 0.287639  |   5.8889348417   | ['temp', 'pcpn', 'wn_spd', 'hmd', 'di', 'sinh', 'cosh', 'thirty' 'gbmht', 'gbwht', 'gbwdht', 'gbht', 'gbhdht', 'gbmonht', 'gbsunht'] |
+| 8  | 2023-08-20 13:17:02 | 8.63984 / 0.287639  | **5.8889348417** | ['temp', 'pcpn', 'wn_spd', 'hmd', 'di', 'sinh', 'cosh', 'thirty' 'gbmht', 'gbwht', 'gbwdht', 'gbht', 'gbhdht', 'gbmonht', 'gbsunht'] |
 
 ## Memo
 - 6th submission 이전까지는 학습 과정에 있어 테스트 데이터가 활용되었기 때문에 CV SMAPE의 신뢰도가 떨어진다.
