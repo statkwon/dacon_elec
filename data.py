@@ -1,5 +1,6 @@
 import pickle
 import holidays
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -57,6 +58,12 @@ class Data:
         self.train['h'] = self.train['dt'].dt.hour
         self.test['h'] = self.test['dt'].dt.hour
 
+        # Cyclic Encoding
+        self.train['sinh'] = np.sin((2 / 24 * np.pi) * self.train['h'])
+        self.train['cosh'] = np.cos((2 / 24 * np.pi) * self.train['h'])
+        self.test['sinh'] = np.sin((2 / 24 * np.pi) * self.test['h'])
+        self.test['cosh'] = np.cos((2 / 24 * np.pi) * self.test['h'])
+
         # 주 변수 생성
         self.train['w'] = [
             dt.isocalendar().week - 21 if dt.month == 6
@@ -85,6 +92,10 @@ class Data:
         self.test['mon'] = [dt.day_of_week == 0 for dt in self.test['dt']]
         self.train['sun'] = [dt.day_of_week == 6 for dt in self.train['dt']]
         self.test['sun'] = [dt.day_of_week == 6 for dt in self.test['dt']]
+
+        # 30도 이상/이하 변수 추가
+        self.train['thirty'] = [1 if temp >= 30 else 0 for temp in self.train['temp']]
+        self.test['thirty'] = [1 if temp >= 30 else 0 for temp in self.test['temp']]
 
         # 강수량 결측치 0으로 대체
         self.train['pcpn'].fillna(0.0, inplace=True)
