@@ -15,12 +15,12 @@ def sudo_smape(predt: np.ndarray, dtrain: xgb.DMatrix) -> Tuple[np.ndarray, np.n
     def gradient(predt: np.ndarray, dtrain: xgb.DMatrix) -> np.ndarray:
         y = dtrain.get_label()
         res = predt - y
-        return np.where(res > 0, 1 / ((res + 1) + 1e-6), 2 * res)
+        return np.where(res > 0, 2 * res, 1.1 * 2 * res)
 
     def hessian(predt: np.ndarray, dtrain: xgb.DMatrix) -> np.ndarray:
         y = dtrain.get_label()
         res = predt - y
-        return np.where(res > 0, -1 / ((res + 1) + 1e-6) ** 2, 2)
+        return np.where(res > 0, 2, 1.1 * 2)
 
     grad = gradient(predt, dtrain)
     hess = hessian(predt, dtrain)
@@ -34,38 +34,52 @@ def fpreproc(dtrain, dtest, param):
     test_data = pd.DataFrame(dtest.get_data().toarray(), columns=dtest.feature_names)
     test_label = dtest.get_label()
 
-    gb_m_target = train_data.groupby(by=['m', 'h'], as_index=False).agg({'target': 'mean'})
-    gb_m_target.rename({'target': 'gbmt'}, axis=1, inplace=True)
+    gb_m_target = train_data.groupby(by=['m', 'h']).agg({'target': ['min', 'mean', 'max', 'std']})
+    gb_m_target.columns = gb_m_target.columns.droplevel()
+    gb_m_target.reset_index(inplace=True)
+    gb_m_target.rename({'min': 'gbmt_min', 'mean': 'gbmt_mean', 'max': 'gbmt_max', 'std': 'gbmt_std'}, axis=1, inplace=True)
     train_data = pd.merge(train_data, gb_m_target, how='left')
     test_data = pd.merge(test_data, gb_m_target, how='left')
 
-    gb_w_target = train_data.groupby(by=['w', 'h'], as_index=False).agg({'target': 'mean'})
-    gb_w_target.rename({'target': 'gbwt'}, axis=1, inplace=True)
+    gb_w_target = train_data.groupby(by=['w', 'h']).agg({'target': ['min', 'mean', 'max', 'std']})
+    gb_w_target.columns = gb_w_target.columns.droplevel()
+    gb_w_target.reset_index(inplace=True)
+    gb_w_target.rename({'min': 'gbwt_min', 'mean': 'gbwt_mean', 'max': 'gbwt_max', 'std': 'gbwt_std'}, axis=1, inplace=True)
     train_data = pd.merge(train_data, gb_w_target, how='left')
     test_data = pd.merge(test_data, gb_w_target, how='left')
 
-    gb_wd_target = train_data.groupby(by=['wd', 'h'], as_index=False).agg({'target': 'mean'})
-    gb_wd_target.rename({'target': 'gbwdt'}, axis=1, inplace=True)
+    gb_wd_target = train_data.groupby(by=['wd', 'h']).agg({'target': ['min', 'mean', 'max', 'std']})
+    gb_wd_target.columns = gb_wd_target.columns.droplevel()
+    gb_wd_target.reset_index(inplace=True)
+    gb_wd_target.rename({'min': 'gbwdt_min', 'mean': 'gbwdt_mean', 'max': 'gbwdt_max', 'std': 'gbwdt_std'}, axis=1, inplace=True)
     train_data = pd.merge(train_data, gb_wd_target, how='left')
     test_data = pd.merge(test_data, gb_wd_target, how='left')
 
-    gb_hd_target = train_data.groupby(by=['hd', 'h'], as_index=False).agg({'target': 'mean'})
-    gb_hd_target.rename({'target': 'gbhdt'}, axis=1, inplace=True)
+    gb_hd_target = train_data.groupby(by=['hd', 'h']).agg({'target': ['min', 'mean', 'max', 'std']})
+    gb_hd_target.columns = gb_hd_target.columns.droplevel()
+    gb_hd_target.reset_index(inplace=True)
+    gb_hd_target.rename({'min': 'gbhdt_min', 'mean': 'gbhdt_mean', 'max': 'gbhdt_max', 'std': 'gbhdt_std'}, axis=1, inplace=True)
     train_data = pd.merge(train_data, gb_hd_target, how='left')
     test_data = pd.merge(test_data, gb_hd_target, how='left')
 
-    gb_h_target = train_data.groupby(by='h', as_index=False).agg({'target': 'mean'})
-    gb_h_target.rename({'target': 'gbht'}, axis=1, inplace=True)
+    gb_h_target = train_data.groupby(by='h').agg({'target': ['min', 'mean', 'max', 'std']})
+    gb_h_target.columns = gb_h_target.columns.droplevel()
+    gb_h_target.reset_index(inplace=True)
+    gb_h_target.rename({'min': 'gbht_min', 'mean': 'gbht_mean', 'max': 'gbht_max', 'std': 'gbht_std'}, axis=1, inplace=True)
     train_data = pd.merge(train_data, gb_h_target, how='left')
     test_data = pd.merge(test_data, gb_h_target, how='left')
 
-    gb_mon_target = train_data.groupby(by=['mon', 'h'], as_index=False).agg({'target': 'mean'})
-    gb_mon_target.rename({'target': 'gbmont'}, axis=1, inplace=True)
+    gb_mon_target = train_data.groupby(by=['mon', 'h']).agg({'target': ['min', 'mean', 'max', 'std']})
+    gb_mon_target.columns = gb_mon_target.columns.droplevel()
+    gb_mon_target.reset_index(inplace=True)
+    gb_mon_target.rename({'min': 'gbmont_min', 'mean': 'gbmont_mean', 'max': 'gbmont_max', 'std': 'gbmont_std'}, axis=1, inplace=True)
     train_data = pd.merge(train_data, gb_mon_target, how='left')
     test_data = pd.merge(test_data, gb_mon_target, how='left')
 
-    gb_sun_target = train_data.groupby(by=['sun', 'h'], as_index=False).agg({'target': 'mean'})
-    gb_sun_target.rename({'target': 'gbsunt'}, axis=1, inplace=True)
+    gb_sun_target = train_data.groupby(by=['sun', 'h']).agg({'target': ['min', 'mean', 'max', 'std']})
+    gb_sun_target.columns = gb_sun_target.columns.droplevel()
+    gb_sun_target.reset_index(inplace=True)
+    gb_sun_target.rename({'min': 'gbsunt_min', 'mean': 'gbsunt_mean', 'max': 'gbsunt_max', 'std': 'gbsunt_std'}, axis=1, inplace=True)
     train_data = pd.merge(train_data, gb_sun_target, how='left')
     test_data = pd.merge(test_data, gb_sun_target, how='left')
 
