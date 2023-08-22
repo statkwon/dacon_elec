@@ -10,14 +10,16 @@
 | 6  | 2023-08-19 01:09:45  | 6.523173 / 0.026867 |   6.8626078093   | ['temp', 'pcpn', 'wn_spd', 'hmd', 'di', 'gbmht', 'gbwht', 'gbwdht', 'gbht', 'gbhdht', 'gbmonht', 'gbsunht']                          |
 | 7  | 2023-08-19 23:31:59  | 8.565082 / 0.033996 |   7.3973001845   | ['temp', 'pcpn', 'wn_spd', 'hmd', 'di', 'gbmht', 'gbwht', 'gbwdht', 'gbht', 'gbhdht', 'gbmonht', 'gbsunht']                          |
 | 8  | 2023-08-20 13:17:02  | 8.63984 / 0.287639  |   5.8889348417   | ['temp', 'pcpn', 'wn_spd', 'hmd', 'di', 'sinh', 'cosh', 'thirty' 'gbmht', 'gbwht', 'gbwdht', 'gbht', 'gbhdht', 'gbmonht', 'gbsunht'] |
-| 9  | 2023-08-21 00:03:47	 | 8.441246 / 0.277251 | **5.7940004726** | ['temp', 'pcpn', 'wn_spd', 'hmd', 'di', 'sinh', 'cosh', 'thirty' 'gbmht', 'gbwht', 'gbwdht', 'gbht', 'gbhdht', 'gbmonht', 'gbsunht'] |
+| 9  | 2023-08-21 00:03:47	 | 8.441246 / 0.277251 |   5.7940004726   | ['temp', 'pcpn', 'wn_spd', 'hmd', 'di', 'sinh', 'cosh', 'thirty' 'gbmht', 'gbwht', 'gbwdht', 'gbht', 'gbhdht', 'gbmonht', 'gbsunht'] |
 | 10 | 2023-08-22 09:18:54	 | 7.811795 / 3.848800 |   6.4326651592   | ['temp', 'pcpn', 'wn_spd', 'hmd', 'di', 'sinh', 'cosh', 'thirty' 'gbmht', 'gbwht', 'gbwdht', 'gbht', 'gbhdht', 'gbmonht', 'gbsunht'] |
+| 11 | 2023-08-22 10:32:17	 | 8.387001 / 0.279191 | **5.7623766675** | ['temp', 'pcpn', 'wn_spd', 'hmd', 'di', 'sinh', 'cosh', 'thirty' 'gbmht', 'gbwht', 'gbwdht', 'gbht', 'gbhdht', 'gbmonht', 'gbsunht'] |
 
 ## Memo
 - 6th submission 이전까지는 학습 과정에 있어 테스트 데이터가 활용되었기 때문에 CV SMAPE의 신뢰도가 떨어진다.
 - 8th submission부터 objective function 변경
 - 9th submission부터 백화점 휴일 데이터 제거
 - 10th submission에 grid search를 적용하였지만 성능이 좋지 않았다.
+- 11th submission에서 subsample과 colsample_bytree 값으로 각각 0.8 사용
 
 ## SMAPE
 $$\text{SMAPE}=\dfrac{100}{n}\sum_{i=1}^n\dfrac{\vert \hat{y}_i-y_i \vert}{(\vert y_i \vert+\vert \hat{y}_i \vert)/2}$$
