@@ -118,6 +118,26 @@ class Model:
 
         return cv
 
+    def grid_search(self, config, num_boost_round, folds, early_stopping_rounds):
+        result = []
+
+        for bd_no in tqdm(range(1, 101)):
+            for max_depth in config['max_depth']:
+                for subsample in config['subsample']:
+                    for colsample_bytree in config['colsample_bytree']:
+                        params = {'eta': 1e-2,
+                                  'max_depth': max_depth,
+                                  'subsample': subsample,
+                                  'colsample_bytree': colsample_bytree,
+                                  'random_state': 0}
+                        cv = self.cross_validation(bd_no, params, num_boost_round, folds, early_stopping_rounds)
+                        best_num_boost_round = cv['test-SMAPE-mean'].argmin()
+                        result.append([bd_no, max_depth, subsample, colsample_bytree, best_num_boost_round,
+                                       cv.loc[best_num_boost_round, 'test-SMAPE-mean'], cv.loc[best_num_boost_round, 'test-SMAPE-std']])
+
+        result_df = pd.DataFrame(result, columns=['bd_no', 'max_depth', 'subsample', 'colsample_bytree', 'best_num_boost_round', 'test-SMAPE-mean', 'test-SMAPE-std'])
+        return result_df
+
     def draw_last_fold_prediction(self, bd_no, params, best_num_boost_round):
         train_data = self.train.loc[self.train['bd_no'] == bd_no, self.feature_names][0:1872]
         test_data = self.train.loc[self.train['bd_no'] == bd_no, self.feature_names][1872:]
@@ -190,6 +210,34 @@ class Model:
             model = xgb.train(params=params,
                               dtrain=dtrain,
                               num_boost_round=best_num_boost_rounds[bd_no - 1],
+                              obj=sudo_smape,
+                              custom_metric=smape)
+            model.save_model('./model/model%d.model' % bd_no)
+
+            y_pred = model.predict(dtest)
+            answer.extend(y_pred.tolist())
+            self.answer = answer
+
+        return answer
+
+    def predict_with_best_params(self, best_params):
+        answer = []
+        for bd_no in tqdm(range(1, 101)):
+            train_data = self.train.loc[self.train['bd_no'] == bd_no, self.feature_names]
+            test_data = self.test.loc[self.test['bd_no'] == bd_no, self.feature_names]
+            train_label = self.train.loc[self.train['bd_no'] == bd_no, 'target']
+            dtrain = xgb.DMatrix(data=train_data, label=train_label)
+            dtest = xgb.DMatrix(data=test_data)
+
+            params = {'eta': 1e-2,
+                      'max_depth': best_params.loc[bd_no - 1, 'max_depth'],
+                      'subsample': best_params.loc[bd_no - 1, 'subsample'],
+                      'colsample_bytree': best_params.loc[bd_no - 1, 'colsample_bytree'],
+                      'random_state': 0}
+
+            model = xgb.train(params=params,
+                              dtrain=dtrain,
+                              num_boost_round=best_params.loc[bd_no - 1, 'best_num_boost_round'],
                               obj=sudo_smape,
                               custom_metric=smape)
             model.save_model('./model/model%d.model' % bd_no)
