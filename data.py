@@ -1,4 +1,3 @@
-import pickle
 import holidays
 import numpy as np
 import pandas as pd
@@ -38,11 +37,6 @@ class Data:
 
         # 사용하지 않는 '연면적', '냉방면적', '건물유형' 제거
         self.building_info.drop(['연면적(m2)', '냉방면적(m2)', '건물유형'], axis=1, inplace=True)
-
-        # 재정의한 '건물유형' 추가
-        with open('bd_type.pkl', 'rb') as f:
-            bd_type = pickle.load(f)
-        self.building_info['건물유형'] = bd_type
 
         self.train = pd.merge(self.train, self.building_info, how='left')
         self.test = pd.merge(self.test, self.building_info, how='left')
