@@ -112,7 +112,7 @@ class Model:
                     obj=sudo_smape,
                     maximize=False,
                     early_stopping_rounds=early_stopping_rounds,
-                    fpreproc=fpreproc,
+                    # fpreproc=fpreproc,
                     shuffle=False,
                     custom_metric=smape)
 
