@@ -34,6 +34,13 @@ def fpreproc(dtrain, dtest, param):
     test_data = pd.DataFrame(dtest.get_data().toarray(), columns=dtest.feature_names)
     test_label = dtest.get_label()
 
+    gb_w_target = train_data.groupby(by='w').agg({'target': ['mean', 'std']})
+    gb_w_target.columns = gb_w_target.columns.droplevel()
+    gb_w_target.reset_index(inplace=True)
+    gb_w_target.rename({'mean': 'gbwt_mean', 'std': 'gbwt_std'}, axis=1, inplace=True)
+    train_data = pd.merge(train_data, gb_w_target, how='left')
+    test_data = pd.merge(test_data, gb_w_target, how='left')
+
     gb_h_target = train_data.groupby(by='h').agg({'target': ['mean', 'std']})
     gb_h_target.columns = gb_h_target.columns.droplevel()
     gb_h_target.reset_index(inplace=True)
@@ -41,8 +48,8 @@ def fpreproc(dtrain, dtest, param):
     train_data = pd.merge(train_data, gb_h_target, how='left')
     test_data = pd.merge(test_data, gb_h_target, how='left')
 
-    train_data.drop(['h', 'target'], axis=1, inplace=True)
-    test_data.drop('h', axis=1, inplace=True)
+    train_data.drop(['w', 'h', 'target'], axis=1, inplace=True)
+    test_data.drop(['w', 'h'], axis=1, inplace=True)
 
     dtrain = xgb.DMatrix(data=train_data, label=train_label)
     dtest = xgb.DMatrix(data=test_data, label=test_label)
@@ -151,6 +158,13 @@ class Model:
 
     def predict(self, params, best_num_boost_rounds, labels):
         answer = []
+
+        gb_w_target = self.train.groupby(by=['bd_no', 'w']).agg({'target': ['mean', 'std']})
+        gb_w_target.columns = gb_w_target.columns.droplevel()
+        gb_w_target.reset_index(inplace=True)
+        gb_w_target.rename({'mean': 'gbwt_mean', 'std': 'gbwt_std'}, axis=1, inplace=True)
+        self.train = pd.merge(self.train, gb_w_target, how='left')
+        self.test = pd.merge(self.test, gb_w_target, how='left')
 
         gb_h_target = self.train.groupby(by=['bd_no', 'h']).agg({'target': ['mean', 'std']})
         gb_h_target.columns = gb_h_target.columns.droplevel()
