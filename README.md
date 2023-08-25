@@ -12,9 +12,10 @@
 | 8  | 2023-08-20 13:17:02  | 8.63984 / 0.287639  |   5.8889348417   | ['temp', 'pcpn', 'wn_spd', 'hmd', 'di', 'sinh', 'cosh', 'thirty' 'gbmht', 'gbwht', 'gbwdht', 'gbht', 'gbhdht', 'gbmonht', 'gbsunht'] |
 | 9  | 2023-08-21 00:03:47	 | 8.441246 / 0.277251 |   5.7940004726   | ['temp', 'pcpn', 'wn_spd', 'hmd', 'di', 'sinh', 'cosh', 'thirty' 'gbmht', 'gbwht', 'gbwdht', 'gbht', 'gbhdht', 'gbmonht', 'gbsunht'] |
 | 10 | 2023-08-22 09:18:54	 | 7.811795 / 3.848800 |   6.4326651592   | ['temp', 'pcpn', 'wn_spd', 'hmd', 'di', 'sinh', 'cosh', 'thirty' 'gbmht', 'gbwht', 'gbwdht', 'gbht', 'gbhdht', 'gbmonht', 'gbsunht'] |
-| 11 | 2023-08-22 10:32:17	 | 8.387001 / 0.279191 | **5.7623766675** | ['temp', 'pcpn', 'wn_spd', 'hmd', 'di', 'sinh', 'cosh', 'thirty' 'gbmht', 'gbwht', 'gbwdht', 'gbht', 'gbhdht', 'gbmonht', 'gbsunht'] |
+| 11 | 2023-08-22 10:32:17	 | 8.387001 / 0.279191 |   5.7623766675   | ['temp', 'pcpn', 'wn_spd', 'hmd', 'di', 'sinh', 'cosh', 'thirty' 'gbmht', 'gbwht', 'gbwdht', 'gbht', 'gbhdht', 'gbmonht', 'gbsunht'] |
 | 12 | 2023-08-22 21:34:02	 | 8.390656 / 0.279009 |   5.7697087696   | ['temp', 'pcpn', 'wn_spd', 'hmd', 'di', 'sinh', 'cosh', 'thirty' 'gbmht', 'gbwht', 'gbwdht', 'gbht', 'gbhdht', 'gbmonht', 'gbsunht'] |
 | 13 | 2023-08-23 23:26:17	 | 6.883666 / 0.195356 |   5.7781272617   | ['temp', 'pcpn', 'wn_spd', 'hmd', 'm', 'wd', 'h', 'sinh', 'cosh', 'w', 'di', 'hd', 'mon', 'sun', 'thirty']                           |
+| 14 | 2023-08-24 00:45:15	 | 7.541097 / 0.213188 | **5.7609990288** | ['temp', 'pcpn', 'wn_spd', 'hmd', 'm', 'wd', 'h', 'sinh', 'cosh', 'w', 'di', 'hd', 'mon', 'sun', 'thirty', 'gbht']                   |
 
 ## Memo
 - 6th submission 이전까지는 학습 과정에 있어 테스트 데이터가 활용되었기 때문에 CV SMAPE의 신뢰도가 떨어진다.
@@ -23,7 +24,7 @@
 - 10th submission에 grid search를 적용하였지만 성능이 좋지 않았다.
 - 11th submission에서 subsample과 colsample_bytree 값으로 각각 0.8 사용
 - 12th submission에서 objective function 계수 조정
-- 13th submission부터 신뢰 가능
+- 14th submission부터 신뢰 가능
 
 ## SMAPE
 $$\text{SMAPE}=\dfrac{100}{n}\sum_{i=1}^n\dfrac{\vert \hat{y}_i-y_i \vert}{(\vert y_i \vert+\vert \hat{y}_i \vert)/2}$$
