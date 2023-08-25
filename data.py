@@ -44,21 +44,10 @@ class Data:
         self.train.rename(self.col_map, axis=1, inplace=True)
         self.test.rename(self.col_map, axis=1, inplace=True)
 
-        # 월, 요일, 시간 변수 생성
+        # 월, 주, 요일, 시간 변수 생성
         self.train['m'] = self.train['dt'].dt.month
         self.test['m'] = self.test['dt'].dt.month
-        self.train['wd'] = self.train['dt'].dt.weekday
-        self.test['wd'] = self.test['dt'].dt.weekday
-        self.train['h'] = self.train['dt'].dt.hour
-        self.test['h'] = self.test['dt'].dt.hour
 
-        # Cyclic Encoding
-        self.train['sinh'] = np.sin((2 / 24 * np.pi) * self.train['h'])
-        self.train['cosh'] = np.cos((2 / 24 * np.pi) * self.train['h'])
-        self.test['sinh'] = np.sin((2 / 24 * np.pi) * self.test['h'])
-        self.test['cosh'] = np.cos((2 / 24 * np.pi) * self.test['h'])
-
-        # 주 변수 생성
         self.train['w'] = [
             dt.isocalendar().week - 21 if dt.month == 6
             else dt.isocalendar().week - 25 if dt.month == 7
@@ -72,9 +61,11 @@ class Data:
             for dt in self.test['dt']
         ]
 
-        # 불쾌지수 변수 추가
-        self.train['di'] = (9 / 5) * self.train['temp'] - 0.55 * (1 - self.train['hmd'] / 100) * ((9 / 5) * self.train['temp'] - 26) + 32
-        self.test['di'] = (9 / 5) * self.test['temp'] - 0.55 * (1 - self.test['hmd'] / 100) * ((9 / 5) * self.test['temp'] - 26) + 32
+        self.train['wd'] = self.train['dt'].dt.weekday
+        self.test['wd'] = self.test['dt'].dt.weekday
+
+        self.train['h'] = self.train['dt'].dt.hour
+        self.test['h'] = self.test['dt'].dt.hour
 
         # 공휴일 변수 추가
         kr_holidays = holidays.KR(years=2022)
@@ -82,10 +73,21 @@ class Data:
         self.test['hd'] = [dt.day_of_week in [5, 6] or dt in kr_holidays for dt in self.test['dt']]
 
         # 월요일, 일요일 변수 추가
-        self.train['mon'] = [dt.day_of_week == 0 for dt in self.train['dt']]
-        self.test['mon'] = [dt.day_of_week == 0 for dt in self.test['dt']]
-        self.train['sun'] = [dt.day_of_week == 6 for dt in self.train['dt']]
-        self.test['sun'] = [dt.day_of_week == 6 for dt in self.test['dt']]
+        self.train['mon'] = [wd == 0 for wd in self.train['wd']]
+        self.test['mon'] = [wd == 0 for wd in self.test['wd']]
+
+        self.train['sun'] = [wd == 6 for wd in self.train['wd']]
+        self.test['sun'] = [wd == 6 for wd in self.test['wd']]
+
+        # Cyclic Encoding
+        self.train['sinh'] = np.sin((2 / 24 * np.pi) * self.train['h'])
+        self.train['cosh'] = np.cos((2 / 24 * np.pi) * self.train['h'])
+        self.test['sinh'] = np.sin((2 / 24 * np.pi) * self.test['h'])
+        self.test['cosh'] = np.cos((2 / 24 * np.pi) * self.test['h'])
+
+        # 불쾌지수 변수 추가
+        self.train['di'] = (9 / 5) * self.train['temp'] - 0.55 * (1 - self.train['hmd'] / 100) * ((9 / 5) * self.train['temp'] - 26) + 32
+        self.test['di'] = (9 / 5) * self.test['temp'] - 0.55 * (1 - self.test['hmd'] / 100) * ((9 / 5) * self.test['temp'] - 26) + 32
 
         # 30도 이상/이하 변수 추가
         self.train['thirty'] = [1 if temp >= 30 else 0 for temp in self.train['temp']]
@@ -105,6 +107,7 @@ class Data:
             for date in target_max.loc[(target_max['bd_no'] == bd_no) & (target_max['target'] < cutoff[i]), 'date']:
                 idx = self.train[(self.train['bd_no'] == bd_no) & (self.train['dt'].dt.date == date)].index
                 self.train.drop(idx, inplace=True)
+        self.train.drop('date', axis=1, inplace=True)
 
     def draw_target(self, bd_no):
         fig, ax = plt.subplots(figsize=(20, 4))
