@@ -34,13 +34,6 @@ def fpreproc(dtrain, dtest, param):
     test_data = pd.DataFrame(dtest.get_data().toarray(), columns=dtest.feature_names)
     test_label = dtest.get_label()
 
-    gb_w_target = train_data.groupby(by='w').agg({'target': ['mean', 'std']})
-    gb_w_target.columns = gb_w_target.columns.droplevel()
-    gb_w_target.reset_index(inplace=True)
-    gb_w_target.rename({'mean': 'gbwt_mean', 'std': 'gbwt_std'}, axis=1, inplace=True)
-    train_data = pd.merge(train_data, gb_w_target, how='left')
-    test_data = pd.merge(test_data, gb_w_target, how='left')
-
     gb_h_target = train_data.groupby(by='h').agg({'target': ['mean', 'std']})
     gb_h_target.columns = gb_h_target.columns.droplevel()
     gb_h_target.reset_index(inplace=True)
@@ -48,8 +41,14 @@ def fpreproc(dtrain, dtest, param):
     train_data = pd.merge(train_data, gb_h_target, how='left')
     test_data = pd.merge(test_data, gb_h_target, how='left')
 
-    train_data.drop(['w', 'h', 'target'], axis=1, inplace=True)
-    test_data.drop(['w', 'h'], axis=1, inplace=True)
+    bd_no = train_data['bd_no'][0]
+
+    if bd_no in [87, 88, 89, 90, 92]:
+        train_data['sun24'] = (train_data['w'].isin([2, 4])) & (train_data['wd'] == 6)
+        test_data['sun24'] = (test_data['w'].isin([2, 4])) & (test_data['wd'] == 6)
+
+    train_data.drop(['bd_no', 'h', 'target'], axis=1, inplace=True)
+    test_data.drop(['bd_no', 'h'], axis=1, inplace=True)
 
     dtrain = xgb.DMatrix(data=train_data, label=train_label)
     dtest = xgb.DMatrix(data=test_data, label=test_label)
@@ -66,7 +65,7 @@ class Model:
         self.answer = answer
 
     def cross_validation(self, bd_no, params, num_boost_round, folds, early_stopping_rounds):
-        data = self.train.loc[self.train['bd_no'] == bd_no, self.feature_names]
+        data = self.train.loc[self.train['bd_no'] == bd_no, [*self.feature_names, 'bd_no']]
         label = self.train.loc[self.train['bd_no'] == bd_no, 'target']
         dtrain = xgb.DMatrix(data=data, label=label)
 
@@ -159,13 +158,6 @@ class Model:
     def predict(self, params, best_num_boost_rounds, labels):
         answer = []
 
-        gb_w_target = self.train.groupby(by=['bd_no', 'w']).agg({'target': ['mean', 'std']})
-        gb_w_target.columns = gb_w_target.columns.droplevel()
-        gb_w_target.reset_index(inplace=True)
-        gb_w_target.rename({'mean': 'gbwt_mean', 'std': 'gbwt_std'}, axis=1, inplace=True)
-        self.train = pd.merge(self.train, gb_w_target, how='left')
-        self.test = pd.merge(self.test, gb_w_target, how='left')
-
         gb_h_target = self.train.groupby(by=['bd_no', 'h']).agg({'target': ['mean', 'std']})
         gb_h_target.columns = gb_h_target.columns.droplevel()
         gb_h_target.reset_index(inplace=True)
@@ -177,6 +169,11 @@ class Model:
             train_data = self.train[self.train['bd_no'] == bd_no].drop([*labels, 'target'], axis=1)
             test_data = self.test[self.test['bd_no'] == bd_no].drop(labels, axis=1)
             train_label = self.train.loc[self.train['bd_no'] == bd_no, 'target']
+
+            if bd_no in [87, 88, 89, 90, 92]:
+                train_data['sun24'] = (train_data['w'].isin([2, 4])) & (train_data['wd'] == 6)
+                test_data['sun24'] = (test_data['w'].isin([2, 4])) & (test_data['wd'] == 6)
+
             dtrain = xgb.DMatrix(data=train_data, label=train_label)
             dtest = xgb.DMatrix(data=test_data)
 
