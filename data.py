@@ -72,12 +72,12 @@ class Data:
         self.train['hd'] = [dt.day_of_week in [5, 6] or dt in kr_holidays for dt in self.train['dt']]
         self.test['hd'] = [dt.day_of_week in [5, 6] or dt in kr_holidays for dt in self.test['dt']]
 
-        # 월요일, 일요일 변수 추가
-        self.train['mon'] = [wd == 0 for wd in self.train['wd']]
-        self.test['mon'] = [wd == 0 for wd in self.test['wd']]
-
-        self.train['sun'] = [wd == 6 for wd in self.train['wd']]
-        self.test['sun'] = [wd == 6 for wd in self.test['wd']]
+        # # 월요일, 일요일 변수 추가
+        # self.train['mon'] = [wd == 0 for wd in self.train['wd']]
+        # self.test['mon'] = [wd == 0 for wd in self.test['wd']]
+        #
+        # self.train['sun'] = [wd == 6 for wd in self.train['wd']]
+        # self.test['sun'] = [wd == 6 for wd in self.test['wd']]
 
         # Cyclic Encoding
         self.train['sinh'] = np.sin((2 / 24 * np.pi) * self.train['h'])

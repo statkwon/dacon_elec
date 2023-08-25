@@ -49,6 +49,12 @@ def fpreproc(dtrain, dtest, param):
     elif bd_no in [7, 12]:
         train_data['sun13'] = (train_data['w'].isin([1, 3])) & (train_data['wd'] == 6)
         test_data['sun13'] = (test_data['w'].isin([1, 3])) & (test_data['wd'] == 6)
+    elif bd_no == 5:
+        train_data['fss'] = train_data['wd'].isin([4, 5, 6])
+        test_data['fss'] = test_data['wd'].isin([4, 5, 6])
+    elif bd_no in [2, 3, 54, 91]:
+        train_data['mon'] = train_data['wd'] == 0
+        test_data['mon'] = test_data['wd'] == 0
 
     train_data.drop(['bd_no', 'h', 'target'], axis=1, inplace=True)
     test_data.drop(['bd_no', 'h'], axis=1, inplace=True)
@@ -179,6 +185,12 @@ class Model:
             elif bd_no in [7, 12]:
                 train_data['sun13'] = (train_data['w'].isin([1, 3])) & (train_data['wd'] == 6)
                 test_data['sun13'] = (test_data['w'].isin([1, 3])) & (test_data['wd'] == 6)
+            elif bd_no == 5:
+                train_data['fss'] = train_data['wd'].isin([4, 5, 6])
+                test_data['fss'] = test_data['wd'].isin([4, 5, 6])
+            elif bd_no in [2, 3, 54, 91]:
+                train_data['mon'] = train_data['wd'] == 0
+                test_data['mon'] = test_data['wd'] == 0
 
             dtrain = xgb.DMatrix(data=train_data, label=train_label)
             dtest = xgb.DMatrix(data=test_data)
