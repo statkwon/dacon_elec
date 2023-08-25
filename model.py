@@ -152,7 +152,7 @@ class Model:
     def predict(self, params, best_num_boost_rounds, labels):
         answer = []
 
-        gb_h_target = self.train.groupby(by='h').agg({'target': ['mean', 'std']})
+        gb_h_target = self.train.groupby(by=['bd_no', 'h']).agg({'target': ['mean', 'std']})
         gb_h_target.columns = gb_h_target.columns.droplevel()
         gb_h_target.reset_index(inplace=True)
         gb_h_target.rename({'mean': 'gbht_mean', 'std': 'gbht_std'}, axis=1, inplace=True)
