@@ -56,11 +56,13 @@ def fpreproc(dtrain, dtest, param):
         train_data['mon'] = train_data['wd'] == 0
         test_data['mon'] = test_data['wd'] == 0
 
-    train_data.drop(['bd_no', 'h', 'target'], axis=1, inplace=True)
-    test_data.drop(['bd_no', 'h'], axis=1, inplace=True)
+    train_data.drop(['bd_no', 'w', 'wd', 'h', 'target'], axis=1, inplace=True)
+    test_data.drop(['bd_no', 'w', 'wd', 'h'], axis=1, inplace=True)
 
-    dtrain = xgb.DMatrix(data=train_data, label=train_label)
-    dtest = xgb.DMatrix(data=test_data, label=test_label)
+    train_data['m'] = train_data['m'].astype("category")
+
+    dtrain = xgb.DMatrix(data=train_data, label=train_label, enable_categorical=True)
+    dtest = xgb.DMatrix(data=test_data, label=test_label, enable_categorical=True)
 
     return dtrain, dtest, param
 
@@ -76,7 +78,7 @@ class Model:
     def cross_validation(self, bd_no, params, num_boost_round, folds, early_stopping_rounds):
         data = self.train.loc[self.train['bd_no'] == bd_no, [*self.feature_names, 'bd_no']]
         label = self.train.loc[self.train['bd_no'] == bd_no, 'target']
-        dtrain = xgb.DMatrix(data=data, label=label)
+        dtrain = xgb.DMatrix(data=data, label=label, enable_categorical=True)
 
         cv = xgb.cv(params=params,
                     dtrain=dtrain,
@@ -138,7 +140,6 @@ class Model:
         plt.show()
 
     def run_cv(self, params, num_boost_round, folds, early_stopping_rounds):
-        # runtime: about 48 min.
         smape_means = []
         smape_stds = []
         best_num_boost_rounds = []
@@ -192,8 +193,11 @@ class Model:
                 train_data['mon'] = train_data['wd'] == 0
                 test_data['mon'] = test_data['wd'] == 0
 
-            dtrain = xgb.DMatrix(data=train_data, label=train_label)
-            dtest = xgb.DMatrix(data=test_data)
+            train_data.drop(['w', 'wd'], axis=1, inplace=True)
+            test_data.drop(['w', 'wd'], axis=1, inplace=True)
+
+            dtrain = xgb.DMatrix(data=train_data, label=train_label, enable_categorical=True)
+            dtest = xgb.DMatrix(data=test_data, enable_categorical=True)
 
             model = xgb.train(params=params,
                               dtrain=dtrain,

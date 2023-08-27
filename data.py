@@ -72,13 +72,6 @@ class Data:
         self.train['hd'] = [dt.day_of_week in [5, 6] or dt in kr_holidays for dt in self.train['dt']]
         self.test['hd'] = [dt.day_of_week in [5, 6] or dt in kr_holidays for dt in self.test['dt']]
 
-        # # 월요일, 일요일 변수 추가
-        # self.train['mon'] = [wd == 0 for wd in self.train['wd']]
-        # self.test['mon'] = [wd == 0 for wd in self.test['wd']]
-        #
-        # self.train['sun'] = [wd == 6 for wd in self.train['wd']]
-        # self.test['sun'] = [wd == 6 for wd in self.test['wd']]
-
         # Cyclic Encoding
         self.train['sinh'] = np.sin((2 / 24 * np.pi) * self.train['h'])
         self.train['cosh'] = np.cos((2 / 24 * np.pi) * self.train['h'])
@@ -90,8 +83,8 @@ class Data:
         self.test['di'] = (9 / 5) * self.test['temp'] - 0.55 * (1 - self.test['hmd'] / 100) * ((9 / 5) * self.test['temp'] - 26) + 32
 
         # 30도 이상/이하 변수 추가
-        self.train['thirty'] = [1 if temp >= 30 else 0 for temp in self.train['temp']]
-        self.test['thirty'] = [1 if temp >= 30 else 0 for temp in self.test['temp']]
+        self.train['thirty'] = self.train['temp'] >= 30
+        self.test['thirty'] = self.test['temp'] >= 30
 
         # 강수량 결측치 0으로 대체
         self.train['pcpn'].fillna(0.0, inplace=True)
@@ -108,6 +101,10 @@ class Data:
                 idx = self.train[(self.train['bd_no'] == bd_no) & (self.train['dt'].dt.date == date)].index
                 self.train.drop(idx, inplace=True)
         self.train.drop('date', axis=1, inplace=True)
+
+        # 범주형 변수 변환
+        self.train['m'] = self.train['m'].astype("category")
+        self.test['m'] = self.test['m'].astype("category")
 
     def draw_target(self, bd_no):
         fig, ax = plt.subplots(figsize=(20, 4))
