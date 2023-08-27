@@ -34,6 +34,13 @@ def fpreproc(dtrain, dtest, param):
     test_data = pd.DataFrame(dtest.get_data().toarray(), columns=dtest.feature_names)
     test_label = dtest.get_label()
 
+    gb_mh_target = train_data.groupby(by=['m', 'h']).agg({'target': ['mean', 'std']})
+    gb_mh_target.columns = gb_mh_target.columns.droplevel()
+    gb_mh_target.reset_index(inplace=True)
+    gb_mh_target.rename({'mean': 'gbmht_mean', 'std': 'gbmht_std'}, axis=1, inplace=True)
+    train_data = pd.merge(train_data, gb_mh_target, how='left')
+    test_data = pd.merge(test_data, gb_mh_target, how='left')
+
     gb_h_target = train_data.groupby(by='h').agg({'target': ['mean', 'std']})
     gb_h_target.columns = gb_h_target.columns.droplevel()
     gb_h_target.reset_index(inplace=True)
@@ -56,13 +63,11 @@ def fpreproc(dtrain, dtest, param):
         train_data['mon'] = train_data['wd'] == 0
         test_data['mon'] = test_data['wd'] == 0
 
-    train_data.drop(['bd_no', 'w', 'wd', 'h', 'target'], axis=1, inplace=True)
-    test_data.drop(['bd_no', 'w', 'wd', 'h'], axis=1, inplace=True)
+    train_data.drop(['bd_no', 'm', 'h', 'target'], axis=1, inplace=True)
+    test_data.drop(['bd_no', 'm', 'h'], axis=1, inplace=True)
 
-    train_data['m'] = train_data['m'].astype("category")
-
-    dtrain = xgb.DMatrix(data=train_data, label=train_label, enable_categorical=True)
-    dtest = xgb.DMatrix(data=test_data, label=test_label, enable_categorical=True)
+    dtrain = xgb.DMatrix(data=train_data, label=train_label)
+    dtest = xgb.DMatrix(data=test_data, label=test_label)
 
     return dtrain, dtest, param
 
@@ -78,7 +83,7 @@ class Model:
     def cross_validation(self, bd_no, params, num_boost_round, folds, early_stopping_rounds):
         data = self.train.loc[self.train['bd_no'] == bd_no, [*self.feature_names, 'bd_no']]
         label = self.train.loc[self.train['bd_no'] == bd_no, 'target']
-        dtrain = xgb.DMatrix(data=data, label=label, enable_categorical=True)
+        dtrain = xgb.DMatrix(data=data, label=label)
 
         cv = xgb.cv(params=params,
                     dtrain=dtrain,
@@ -168,6 +173,13 @@ class Model:
     def predict(self, params, best_num_boost_rounds, labels):
         answer = []
 
+        gb_mh_target = self.train.groupby(by=['bd_no', 'm', 'h']).agg({'target': ['mean', 'std']})
+        gb_mh_target.columns = gb_mh_target.columns.droplevel()
+        gb_mh_target.reset_index(inplace=True)
+        gb_mh_target.rename({'mean': 'gbmht_mean', 'std': 'gbmht_std'}, axis=1, inplace=True)
+        self.train = pd.merge(self.train, gb_mh_target, how='left')
+        self.test = pd.merge(self.test, gb_mh_target, how='left')
+
         gb_h_target = self.train.groupby(by=['bd_no', 'h']).agg({'target': ['mean', 'std']})
         gb_h_target.columns = gb_h_target.columns.droplevel()
         gb_h_target.reset_index(inplace=True)
@@ -193,11 +205,8 @@ class Model:
                 train_data['mon'] = train_data['wd'] == 0
                 test_data['mon'] = test_data['wd'] == 0
 
-            train_data.drop(['w', 'wd'], axis=1, inplace=True)
-            test_data.drop(['w', 'wd'], axis=1, inplace=True)
-
-            dtrain = xgb.DMatrix(data=train_data, label=train_label, enable_categorical=True)
-            dtest = xgb.DMatrix(data=test_data, enable_categorical=True)
+            dtrain = xgb.DMatrix(data=train_data, label=train_label)
+            dtest = xgb.DMatrix(data=test_data)
 
             model = xgb.train(params=params,
                               dtrain=dtrain,

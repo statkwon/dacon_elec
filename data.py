@@ -102,10 +102,6 @@ class Data:
                 self.train.drop(idx, inplace=True)
         self.train.drop('date', axis=1, inplace=True)
 
-        # 범주형 변수 변환
-        self.train['m'] = self.train['m'].astype("category")
-        self.test['m'] = self.test['m'].astype("category")
-
     def draw_target(self, bd_no):
         fig, ax = plt.subplots(figsize=(20, 4))
         ax.plot('dt', 'target', data=self.train[self.train['bd_no'] == bd_no])
