@@ -34,13 +34,6 @@ def fpreproc(dtrain, dtest, param):
     test_data = pd.DataFrame(dtest.get_data().toarray(), columns=dtest.feature_names)
     test_label = dtest.get_label()
 
-    gb_mh_target = train_data.groupby(by=['m', 'h']).agg({'target': ['mean', 'std']})
-    gb_mh_target.columns = gb_mh_target.columns.droplevel()
-    gb_mh_target.reset_index(inplace=True)
-    gb_mh_target.rename({'mean': 'gbmht_mean', 'std': 'gbmht_std'}, axis=1, inplace=True)
-    train_data = pd.merge(train_data, gb_mh_target, how='left')
-    test_data = pd.merge(test_data, gb_mh_target, how='left')
-
     gb_h_target = train_data.groupby(by='h').agg({'target': ['mean', 'std']})
     gb_h_target.columns = gb_h_target.columns.droplevel()
     gb_h_target.reset_index(inplace=True)
@@ -63,8 +56,8 @@ def fpreproc(dtrain, dtest, param):
         train_data['mon'] = train_data['wd'] == 0
         test_data['mon'] = test_data['wd'] == 0
 
-    train_data.drop(['bd_no', 'm', 'h', 'target'], axis=1, inplace=True)
-    test_data.drop(['bd_no', 'm', 'h'], axis=1, inplace=True)
+    train_data.drop(['bd_no', 'h', 'target'], axis=1, inplace=True)
+    test_data.drop(['bd_no', 'h'], axis=1, inplace=True)
 
     dtrain = xgb.DMatrix(data=train_data, label=train_label)
     dtest = xgb.DMatrix(data=test_data, label=test_label)
@@ -111,11 +104,11 @@ class Model:
                                   'colsample_bytree': colsample_bytree,
                                   'random_state': 0}
                         cv = self.cross_validation(bd_no, params, num_boost_round, folds, early_stopping_rounds)
+                        best_smape_mean = cv['test-SMAPE-mean'].min()
                         best_num_boost_round = cv['test-SMAPE-mean'].argmin()
-                        result.append([bd_no, max_depth, subsample, colsample_bytree, best_num_boost_round,
-                                       cv.loc[best_num_boost_round, 'test-SMAPE-mean'], cv.loc[best_num_boost_round, 'test-SMAPE-std']])
+                        result.append([bd_no, max_depth, subsample, colsample_bytree, best_num_boost_round, best_smape_mean])
 
-        result_df = pd.DataFrame(result, columns=['bd_no', 'max_depth', 'subsample', 'colsample_bytree', 'best_num_boost_round', 'test-SMAPE-mean', 'test-SMAPE-std'])
+        result_df = pd.DataFrame(result, columns=['bd_no', 'max_depth', 'subsample', 'colsample_bytree', 'best_num_boost_round', 'test-SMAPE-mean'])
         return result_df
 
     def draw_last_fold_prediction(self, bd_no, params, best_num_boost_round):
@@ -173,13 +166,6 @@ class Model:
     def predict(self, params, best_num_boost_rounds, labels):
         answer = []
 
-        gb_mh_target = self.train.groupby(by=['bd_no', 'm', 'h']).agg({'target': ['mean', 'std']})
-        gb_mh_target.columns = gb_mh_target.columns.droplevel()
-        gb_mh_target.reset_index(inplace=True)
-        gb_mh_target.rename({'mean': 'gbmht_mean', 'std': 'gbmht_std'}, axis=1, inplace=True)
-        self.train = pd.merge(self.train, gb_mh_target, how='left')
-        self.test = pd.merge(self.test, gb_mh_target, how='left')
-
         gb_h_target = self.train.groupby(by=['bd_no', 'h']).agg({'target': ['mean', 'std']})
         gb_h_target.columns = gb_h_target.columns.droplevel()
         gb_h_target.reset_index(inplace=True)
@@ -221,24 +207,46 @@ class Model:
 
         return answer
 
-    def predict_with_best_params(self, best_params):
+    def predict_with_best_params(self, best_params, labels):
         answer = []
+
+        gb_h_target = self.train.groupby(by=['bd_no', 'h']).agg({'target': ['mean', 'std']})
+        gb_h_target.columns = gb_h_target.columns.droplevel()
+        gb_h_target.reset_index(inplace=True)
+        gb_h_target.rename({'mean': 'gbht_mean', 'std': 'gbht_std'}, axis=1, inplace=True)
+        self.train = pd.merge(self.train, gb_h_target, how='left')
+        self.test = pd.merge(self.test, gb_h_target, how='left')
+
         for bd_no in tqdm(range(1, 101)):
-            train_data = self.train.loc[self.train['bd_no'] == bd_no, self.feature_names]
-            test_data = self.test.loc[self.test['bd_no'] == bd_no, self.feature_names]
+            train_data = self.train[self.train['bd_no'] == bd_no].drop([*labels, 'target'], axis=1)
+            test_data = self.test[self.test['bd_no'] == bd_no].drop(labels, axis=1)
             train_label = self.train.loc[self.train['bd_no'] == bd_no, 'target']
+
+            if bd_no in [9, 87, 88, 89, 90, 92]:
+                train_data['sun24'] = (train_data['w'].isin([2, 4])) & (train_data['wd'] == 6)
+                test_data['sun24'] = (test_data['w'].isin([2, 4])) & (test_data['wd'] == 6)
+            elif bd_no in [7, 12]:
+                train_data['sun13'] = (train_data['w'].isin([1, 3])) & (train_data['wd'] == 6)
+                test_data['sun13'] = (test_data['w'].isin([1, 3])) & (test_data['wd'] == 6)
+            elif bd_no == 5:
+                train_data['fss'] = train_data['wd'].isin([4, 5, 6])
+                test_data['fss'] = test_data['wd'].isin([4, 5, 6])
+            elif bd_no in [2, 3, 54, 91]:
+                train_data['mon'] = train_data['wd'] == 0
+                test_data['mon'] = test_data['wd'] == 0
+
             dtrain = xgb.DMatrix(data=train_data, label=train_label)
             dtest = xgb.DMatrix(data=test_data)
 
             params = {'eta': 1e-2,
-                      'max_depth': best_params.loc[bd_no - 1, 'max_depth'],
+                      'max_depth': int(best_params.loc[bd_no - 1, 'max_depth']),
                       'subsample': best_params.loc[bd_no - 1, 'subsample'],
                       'colsample_bytree': best_params.loc[bd_no - 1, 'colsample_bytree'],
                       'random_state': 0}
 
             model = xgb.train(params=params,
                               dtrain=dtrain,
-                              num_boost_round=best_params.loc[bd_no - 1, 'best_num_boost_round'],
+                              num_boost_round=int(best_params.loc[bd_no - 1, 'best_num_boost_round']),
                               obj=sudo_smape,
                               custom_metric=smape)
             model.save_model('./model/model%d.model' % bd_no)
